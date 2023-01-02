@@ -6,33 +6,19 @@ set -e
 echo "Download and compile Skia & other dependencies"
 cd /dependencies
 
-if [ ! -d "/dependencies/depot_tools" ]
-then
-  git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-fi
-
 if [ ! -d "/dependencies/skia" ]
 then
-  git clone -b aseprite-m96 https://github.com/aseprite/skia.git
+    curl -L -o "Skia-Linux-Release-x64-libc++.zip" https://github.com/aseprite/skia/releases/download/m102-861e4743af/Skia-Linux-Release-x64-libc++.zip
+    unzip ./Skia-Linux-Release-x64-libc++.zip -d ./skia
+    rm ./Skia-Linux-Release-x64-libc++.zip
 fi
-
-export PATH="${PWD}/depot_tools:${PATH}"
-
-cd skia
-pwd
-echo "Syncing skia dependencies"
-python3 tools/git-sync-deps
-
-echo "Compiling skia"
-gn gen out/Release-x64 --args="is_debug=false is_official_build=true skia_use_system_expat=false skia_use_system_icu=false skia_use_system_libjpeg_turbo=false skia_use_system_libpng=false skia_use_system_libwebp=false skia_use_system_zlib=false skia_use_sfntly=false skia_use_freetype=true skia_use_harfbuzz=true skia_pdf_subset_harfbuzz=true skia_use_system_freetype2=false skia_use_system_harfbuzz=false"
-ninja -C out/Release-x64 skia modules
 
 echo "Download Aseprite and compile"
 cd /output
 
 if [ ! -d "/output/aseprite" ]
 then
-  git clone -b v1.2.34.1 --recursive https://github.com/aseprite/aseprite.git
+  git clone -b v1.2.40 --recursive https://github.com/aseprite/aseprite.git
 fi
 
 cd aseprite
@@ -40,8 +26,12 @@ mkdir -p build
 cd build
 
 echo "Compiling Asperite"
+export CC=clang-10
+export CXX=clang++-10
 cmake \
   -DCMAKE_BUILD_TYPE=RelWithDebInfo \
+  -DCMAKE_CXX_FLAGS:STRING=-stdlib=libc++ \
+  -DCMAKE_EXE_LINKER_FLAGS:STRING=-stdlib=libc++ \
   -DLAF_BACKEND=skia \
   -DSKIA_DIR=/dependencies/skia \
   -DSKIA_LIBRARY_DIR=/dependencies/skia/out/Release-x64 \
