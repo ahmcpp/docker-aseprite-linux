@@ -1,4 +1,4 @@
-FROM python
+FROM ubuntu:20:04
 
 #Required for tzdata
 ENV TZ=Europe/Amsterdam
