@@ -1,4 +1,4 @@
-FROM ubuntu:20:04
+FROM ubuntu:20.04
 
 #Required for tzdata
 ENV TZ=Europe/Amsterdam
